@@ -1,0 +1,93 @@
+public class PumpSystem {
+    private double pressure;        // текущее давление
+    private double setPressure;     // заданное давление
+    private boolean m1Running;      // состояние насоса M1
+    private boolean m2Running;      // состояние насоса M2
+    private boolean m1Fault;        // авария M1
+    private boolean m2Fault;        // авария M2
+
+    // Конструктор для инициализации системы
+    public PumpSystem() {
+        this.pressure = 0.0;
+        this.setPressure = 10.0;   // задаём желаемое давление, например, 10 бар
+        this.m1Running = false;
+        this.m2Running = false;
+        this.m1Fault = false;
+        this.m2Fault = false;
+    }
+    // Метод управления насосами в зависимости от давления
+
+    public void control() {
+        if (pressure < setPressure) {
+            if (!m1Fault) {
+                m1Running = true;
+                m2Running = false;
+            } else if (!m2Fault) {
+                m1Running = false;
+                m2Running = true;
+            }
+        } else {
+            m1Running = false;
+            m2Running = false;
+        }
+    }
+    // Метод для симуляции изменения давления
+    public void simulatePressure() {
+        if (m1Running || m2Running) {
+            pressure += 0.1;  // если насос работает, давление увеличивается
+        } else {
+
+                pressure -= 2; // если насосы не работают, давление падает
+            }
+
+
+        // Ограничиваем диапазон давления
+        if (pressure < 0) pressure = 0;
+        if (pressure > 16) pressure = 16;
+    }
+
+
+
+    // Метод для симуляции аварийных состояний
+    public void fault(boolean m1Fault, boolean m2Fault) {
+        this.m1Fault = m1Fault;
+        this.m2Fault = m2Fault;
+    }
+
+    // Метод для вывода текущего состояния системы
+    public void printStatus() {
+        System.out.println("Pressure: " + pressure + " bar");
+        System.out.println("M1 running: " + m1Running);
+        System.out.println("M2 running: " + m2Running);
+        System.out.println("----------------------------");
+    }
+
+    // Основная программа
+    public static void main(String[] args) {
+        PumpSystem system = new PumpSystem();
+
+        // Симуляция работы на 100 циклов
+        for (int i = 0; i < 1000; i++) {
+            system.simulatePressure();  // Симуляция давления
+            system.control();           // Управление насосами
+            system.printStatus();       // Печать состояния системы
+
+            // Симуляция аварий (на 50-м цикле отключаем M1)
+            if (i == 50) {
+                system.fault(true, false);  // Авария на M1
+            }
+            //дядя пришел и починил основной насос
+            if (i == 800) {
+                system.fault(false, true);  // Авария на M1
+            }
+
+
+            // Замедление для удобного чтения вывода
+            try {
+                Thread.sleep(100); // задержка 100 мс
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
